@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
-import imagen from './cryptomonedas.png';
+import imagen from './assets/cryptomonedas.png';
+import dev from './assets/Desarrollador.jpeg';
 import Formulario from './Components/Formulario/Formulario';
 import axios from 'axios';
+import Cotizacion from './Components/Cotizacion/Contizacion';
+import Spinner from './Components/Spinner/Spinner';
 
 
 const Contenedor = styled.div`
@@ -20,6 +23,29 @@ const Img = styled.img`
   margin-top: 5rem;
 `;
 
+const ImgDev = styled.img`
+    width:150px;
+    height:150px;
+    border-radius:150px;
+    border: 2px solid black;
+    cursor: pointer;
+&::hover{
+  filter: grayscale(100%)
+}
+
+`;
+const ContenerdoImg = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  p{
+    color: #FFF;
+    font-size: 20px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  }
+`;
 const Heading = styled.h1`
   font-family: 'Bebas Neue', cursive;
   color: #FFF;
@@ -39,8 +65,8 @@ const Heading = styled.h1`
 function App() {
   const [moneda, guardarMoneda] = useState('');
   const [criptoMoneda, guardarCriptoMoneda] = useState('');
-  const [infoCriptomoneda, guardarInfoCriptomoneda] = useState({});
-  console.log(infoCriptomoneda);
+  const [resultado, guardarResultado] = useState({});
+  const [cargando, guardarCargado] = useState(false)
 
   useEffect(() => {
     const cotizarCriptomoneda = async () => {
@@ -48,14 +74,36 @@ function App() {
       // consultar la api
       const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptoMoneda}&tsyms=${moneda}`
       const resultado = await axios.get(url);
-      guardarInfoCriptomoneda(resultado.data.DISPLAY[criptoMoneda][moneda]);
+
+      //Mostrar el Spinner
+      guardarCargado(true);
+
+      setTimeout(() => {
+        // dejar de mostrar el Spinner
+        guardarCargado(false);
+        // Guardar la cotización 
+        guardarResultado(resultado.data.DISPLAY[criptoMoneda][moneda]);
+      }, 3000)
+
     }
     cotizarCriptomoneda();
   }, [moneda, criptoMoneda]);
+
+  // Mostrar el Spinner o resultado
+
+  const componente = (cargando) ? <Spinner /> : <Cotizacion resultado={resultado} />
   return (
     <Contenedor>
       <div>
         <Img alt="img-criptomonedas" src={imagen} />
+        <ContenerdoImg>
+          <ImgDev alt="img-desarrollador" src={dev} />
+          <p>Developer
+          <span role="img" aria-label="carita">&#129299;</span>
+            <span role="img" aria-label="mano">&#128075;</span>
+          </p>
+        </ContenerdoImg>
+
       </div>
       <div>
         <Heading>Cotiza Criptomonedas al Instante</Heading>
@@ -63,6 +111,7 @@ function App() {
           guardarMoneda={guardarMoneda}
           guardarCriptoMoneda={guardarCriptoMoneda}
         />
+        {componente}
       </div>
     </Contenedor>
   );
